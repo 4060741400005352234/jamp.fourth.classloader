@@ -32,8 +32,9 @@ public class UserConsole {
                         // Создаем загрузчик
                         JarClassLoader jarClassLoader = new JarClassLoader(jarFilePath, pluginPackage);
                         // Загружаем класс
-                        Class<?> clazz = Class.forName(pluginPackage + PACKAGE_DELIMITER + pluginClassName, true, jarClassLoader);
+                        Class clazz = Class.forName(pluginPackage + PACKAGE_DELIMITER + pluginClassName, true, jarClassLoader);
                         // Создаем экземпляр класса
+                        log.info("Class " + clazz.getName() + " loaded by " + clazz.getClassLoader());
                         Plugin plugin = (Plugin) clazz.newInstance();
                         plugin.run();
                     } catch (ClassNotFoundException e) {
