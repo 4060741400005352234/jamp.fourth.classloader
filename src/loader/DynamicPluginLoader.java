@@ -9,15 +9,15 @@ import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class JarClassLoader extends ClassLoader {
+public class DynamicPluginLoader extends ClassLoader {
 
-    private static Logger log = Logger.getLogger(JarClassLoader.class);
+    private static Logger log = Logger.getLogger(DynamicPluginLoader.class);
 
     private HashMap<String, Class<?>> cache = new HashMap<String, Class<?>>();
     private String jarFileName;
     private String packageName;
 
-    public JarClassLoader(String jarFileName, String packageName) {
+    public DynamicPluginLoader(String jarFileName, String packageName) {
         this.jarFileName = jarFileName;
         this.packageName = packageName;
         cacheClasses();
