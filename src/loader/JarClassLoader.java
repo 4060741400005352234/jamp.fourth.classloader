@@ -1,5 +1,7 @@
 package loader;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -9,11 +11,11 @@ import java.util.jar.JarFile;
 
 public class JarClassLoader extends ClassLoader {
 
+    private static Logger log = Logger.getLogger(JarClassLoader.class);
+
     private HashMap<String, Class<?>> cache = new HashMap<String, Class<?>>();
     private String jarFileName;
     private String packageName;
-
-    private static final String WARNING = "Warning : No jar file found. Packet unmarshalling won't be possible. Please verify your classpath";
 
     public JarClassLoader(String jarFileName, String packageName) {
         this.jarFileName = jarFileName;
@@ -22,27 +24,32 @@ public class JarClassLoader extends ClassLoader {
     }
 
     private void cacheClasses() {
+        log.info("Start processing jar " + jarFileName);
         try {
             JarFile jarFile = new JarFile(jarFileName);
             Enumeration entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry jarEntry = (JarEntry) entries.nextElement();
+                log.info("New jar-entry found - " + jarEntry.getName());
                 // Одно из назначений хорошего загрузчика - валидация классов на этапе загрузки
                 if (match(normalize(jarEntry.getName()), packageName)) {
                     byte[] classData = loadClassData(jarFile, jarEntry);
                     if (classData != null) {
                         Class<?> clazz = defineClass(stripClassName(normalize(jarEntry.getName())), classData, 0, classData.length);
                         cache.put(clazz.getName(), clazz);
-                        System.out.println("== class " + clazz.getName() + " loaded in cache");
+                        log.info("Class " + clazz.getName() + " loaded in local cache.");
                     }
+                } else {
+                    log.info("Jar-entry " + jarEntry.getName() + " is not appropriate for loading.");
                 }
             }
-        } catch (IOException IOE) {
-            System.out.println(WARNING);
+        } catch (IOException e) {
+            log.error("Error during processing jar-file " + jarFileName, e );
         }
     }
 
     public synchronized Class<?> loadClass(String name) throws ClassNotFoundException {
+        log.info("Loading class " + name);
         Class<?> result = cache.get(name);
         // Возможно класс вызывается не по полному имени - добавим имя пакета
         if (result == null)
@@ -50,7 +57,6 @@ public class JarClassLoader extends ClassLoader {
         // Если класса нет в кэше то возможно он системный
         if (result == null)
             result = super.findSystemClass(name);
-        System.out.println("== loadClass(" + name + ")");
         return result;
     }
 
