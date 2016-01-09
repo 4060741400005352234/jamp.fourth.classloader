@@ -23,6 +23,19 @@ public class DynamicPluginLoader extends ClassLoader {
         cacheClasses();
     }
 
+    @Override
+    public synchronized Class loadClass(String name) throws ClassNotFoundException {
+        log.info("Loading class " + name);
+        Class result = cache.get(name);
+        if (result == null) {
+            result = cache.get(packageName + "." + name);
+        }
+        if (result == null) {
+            result = super.findSystemClass(name);
+        }
+        return result;
+    }
+
     private void cacheClasses() {
         log.info("Start processing jar " + jarFileName);
         try {
@@ -46,18 +59,6 @@ public class DynamicPluginLoader extends ClassLoader {
         } catch (IOException e) {
             log.error("Error during processing jar-file " + jarFileName, e );
         }
-    }
-
-    public synchronized Class loadClass(String name) throws ClassNotFoundException {
-        log.info("Loading class " + name);
-        Class result = cache.get(name);
-        if (result == null) {
-            result = cache.get(packageName + "." + name);
-        }
-        if (result == null) {
-            result = super.findSystemClass(name);
-        }
-        return result;
     }
 
     private String stripClassName(String className) {
