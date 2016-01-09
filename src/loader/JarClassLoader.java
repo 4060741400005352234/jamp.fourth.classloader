@@ -13,7 +13,7 @@ public class JarClassLoader extends ClassLoader {
     private String jarFileName;
     private String packageName;
 
-    private static String WARNING = "Warning : No jar file found. Packet unmarshalling won't be possible. Please verify your classpath";
+    private static final String WARNING = "Warning : No jar file found. Packet unmarshalling won't be possible. Please verify your classpath";
 
     public JarClassLoader(String jarFileName, String packageName) {
         this.jarFileName = jarFileName;
@@ -54,37 +54,14 @@ public class JarClassLoader extends ClassLoader {
         return result;
     }
 
-    /**
-     * Получаем каноническое имя класса
-     *
-     * @param className
-     * @return
-     */
     private String stripClassName(String className) {
         return className.substring(0, className.length() - 6);
     }
 
-    /**
-     * Преобразуем имя в файловой системе в имя класса
-     * <p/>
-     * (заменяем слэши на точки)
-     *
-     * @param className
-     * @return
-     */
     private String normalize(String className) {
         return className.replace('/', '.');
     }
 
-    /**
-     * Валидация класса - проверят принадлежит ли класс заданному пакету и имеет ли
-     * <p/>
-     * он расширение .class
-     *
-     * @param className
-     * @param packageName
-     * @return
-     */
     private boolean match(String className, String packageName) {
         return className.startsWith(packageName) && className.endsWith(".class");
     }
