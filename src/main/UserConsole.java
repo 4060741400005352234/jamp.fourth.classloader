@@ -12,13 +12,12 @@ import java.io.InputStreamReader;
 public class UserConsole {
 
     public static final String PACKAGE_DELIMITER = ".";
-    private static Logger log = Logger.getLogger(UserConsole.class);
 
-    private BufferedReader bufferedReader;
+    private static Logger log = Logger.getLogger(UserConsole.class);
 
     public void performUserControl() {
         try {
-            bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
             try {
                 System.out.println("Enter jar-file name (with path): ");
                 String jarFilePath = bufferedReader.readLine();
