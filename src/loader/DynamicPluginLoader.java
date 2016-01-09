@@ -13,6 +13,7 @@ public class DynamicPluginLoader extends ClassLoader {
 
     private static Logger log = Logger.getLogger(DynamicPluginLoader.class);
 
+    // Cache for using loadClass(...) directly
     private HashMap<String, Class> cache = new HashMap<String, Class>();
     private String jarFileName;
     private String packageName;
