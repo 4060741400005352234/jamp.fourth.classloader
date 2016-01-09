@@ -13,7 +13,7 @@ public class DynamicPluginLoader extends ClassLoader {
 
     private static Logger log = Logger.getLogger(DynamicPluginLoader.class);
 
-    private HashMap<String, Class<?>> cache = new HashMap<String, Class<?>>();
+    private HashMap<String, Class> cache = new HashMap<String, Class>();
     private String jarFileName;
     private String packageName;
 
@@ -31,8 +31,8 @@ public class DynamicPluginLoader extends ClassLoader {
             while (entries.hasMoreElements()) {
                 JarEntry jarEntry = (JarEntry) entries.nextElement();
                 log.info("New jar-entry found - " + jarEntry.getName());
-                // Одно из назначений хорошего загрузчика - валидация классов на этапе загрузки
-                if (match(normalize(jarEntry.getName()), packageName)) {
+                // Validation and loading
+                if (isClassInPackage(normalize(jarEntry.getName()), packageName)) {
                     byte[] classData = loadClassData(jarFile, jarEntry);
                     if (classData != null) {
                         Class<?> clazz = defineClass(stripClassName(normalize(jarEntry.getName())), classData, 0, classData.length);
@@ -48,15 +48,15 @@ public class DynamicPluginLoader extends ClassLoader {
         }
     }
 
-    public synchronized Class<?> loadClass(String name) throws ClassNotFoundException {
+    public synchronized Class loadClass(String name) throws ClassNotFoundException {
         log.info("Loading class " + name);
-        Class<?> result = cache.get(name);
-        // Возможно класс вызывается не по полному имени - добавим имя пакета
-        if (result == null)
+        Class result = cache.get(name);
+        if (result == null) {
             result = cache.get(packageName + "." + name);
-        // Если класса нет в кэше то возможно он системный
-        if (result == null)
+        }
+        if (result == null) {
             result = super.findSystemClass(name);
+        }
         return result;
     }
 
@@ -68,24 +68,21 @@ public class DynamicPluginLoader extends ClassLoader {
         return className.replace('/', '.');
     }
 
-    private boolean match(String className, String packageName) {
+    private boolean isClassInPackage(String className, String packageName) {
         return className.startsWith(packageName) && className.endsWith(".class");
     }
 
-    /**
-     * Извлекаем файл из заданного JarEntry
-     *
-     * @param jarFile  - файл jar-архива из которого извлекаем нужный файл
-     * @param jarEntry - jar-сущность которую извлекаем
-     * @return null если невозможно прочесть файл
-     */
     private byte[] loadClassData(JarFile jarFile, JarEntry jarEntry) throws IOException {
         long size = jarEntry.getSize();
-        if (size == -1 || size == 0)
+        if (size <= 0)
             return null;
         byte[] data = new byte[(int) size];
         InputStream in = jarFile.getInputStream(jarEntry);
-        in.read(data);
+        try {
+            in.read(data);
+        } finally {
+            in.close();
+        }
         return data;
     }
 }
