@@ -26,23 +26,27 @@ public class DynamicPluginLoader extends ClassLoader {
 
     @Override
     public synchronized Class loadClass(String name) throws ClassNotFoundException {
-        log.info("Loading class " + name);
-        Class result = cache.get(name);
-        if (result == null) {
-            result = cache.get(packageName + "." + name);
-        }
-        if (result == null) {
-            result = super.findSystemClass(name);
-        }
-        return result;
+        return findClass(name);
     }
 
     @Override
     public synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        log.info("Loading class " + name);
-        Class clazz = loadClass(name);
+        Class clazz = findClass(name);
         if (resolve) {
             resolveClass(clazz);
+        }
+        return clazz;
+    }
+
+    @Override
+    protected Class findClass(String name) throws ClassNotFoundException {
+        log.info("Loading class " + name);
+        Class clazz = cache.get(name);
+        if (clazz == null) {
+            clazz = cache.get(packageName + "." + name);
+        }
+        if (clazz == null) {
+            clazz = super.findSystemClass(name);
         }
         return clazz;
     }
