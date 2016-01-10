@@ -37,6 +37,16 @@ public class DynamicPluginLoader extends ClassLoader {
         return result;
     }
 
+    @Override
+    public synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        log.info("Loading class " + name);
+        Class clazz = loadClass(name);
+        if (resolve) {
+            resolveClass(clazz);
+        }
+        return clazz;
+    }
+
     private void cacheClasses() {
         log.info("Start processing jar " + jarFileName);
         try {
